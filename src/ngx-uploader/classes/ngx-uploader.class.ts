@@ -24,7 +24,7 @@ export class NgUploaderService {
   uploadScheduler: Subject<{ file: UploadFile, event: UploadInput }>;
   subs: { id: string, sub: Subscription }[];
   contentTypes: string[];
-  totalFileSizeExceeded: boolean = false;
+  totalFileSizeExceeded: any = { status : false};
 
   constructor(concurrency: number = Number.POSITIVE_INFINITY, contentTypes: string[] = ['*']) {
     this.queue = [];
@@ -44,7 +44,7 @@ export class NgUploaderService {
       incomingFiles,
       totalFileSizeExceeded: this.totalFileSizeExceeded
     });
-    if (!this.totalFileSizeExceeded) {
+    if (!this.totalFileSizeExceeded.status) {
       const allowedIncomingFiles: File[] = [].reduce.call(incomingFiles, (acc: File[], checkFile: File, i: number) => {
         if (this.isContentTypeAllowed(checkFile.type)) {
           acc = acc.concat(checkFile);
