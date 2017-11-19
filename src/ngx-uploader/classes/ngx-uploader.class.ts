@@ -20,6 +20,7 @@ export function humanizeBytes(bytes: number): string {
 export class NgUploaderService {
   queue: UploadFile[];
   serviceEvents: EventEmitter<UploadOutput>;
+  filesListEvents: EventEmitter<any>;
   uploadScheduler: Subject<{ file: UploadFile, event: UploadInput }>;
   subs: { id: string, sub: Subscription }[];
   contentTypes: string[];
@@ -27,6 +28,7 @@ export class NgUploaderService {
   constructor(concurrency: number = Number.POSITIVE_INFINITY, contentTypes: string[] = ['*']) {
     this.queue = [];
     this.serviceEvents = new EventEmitter<any>();
+    this.filesListEvents = new EventEmitter<any>();
     this.uploadScheduler = new Subject();
     this.subs = [];
     this.contentTypes = contentTypes;
@@ -38,6 +40,7 @@ export class NgUploaderService {
 
   handleFiles(incomingFiles: FileList): void {
     const allowedIncomingFiles: File[] = [].reduce.call(incomingFiles, (acc: File[], checkFile: File, i: number) => {
+      this.filesListEvents.emit(incomingFiles);
       if (this.isContentTypeAllowed(checkFile.type)) {
         acc = acc.concat(checkFile);
       } else {
