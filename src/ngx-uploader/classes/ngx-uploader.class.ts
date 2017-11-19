@@ -39,8 +39,8 @@ export class NgUploaderService {
   }
 
   handleFiles(incomingFiles: FileList): void {
+    this.filesListEvents.emit(incomingFiles);
     const allowedIncomingFiles: File[] = [].reduce.call(incomingFiles, (acc: File[], checkFile: File, i: number) => {
-      this.filesListEvents.emit(incomingFiles);
       if (this.isContentTypeAllowed(checkFile.type)) {
         acc = acc.concat(checkFile);
       } else {
