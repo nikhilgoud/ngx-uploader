@@ -24,6 +24,7 @@ export class NgUploaderService {
   uploadScheduler: Subject<{ file: UploadFile, event: UploadInput }>;
   subs: { id: string, sub: Subscription }[];
   contentTypes: string[];
+  totalFileSizeExceeded: boolean = false;
 
   constructor(concurrency: number = Number.POSITIVE_INFINITY, contentTypes: string[] = ['*']) {
     this.queue = [];
@@ -39,25 +40,30 @@ export class NgUploaderService {
   }
 
   handleFiles(incomingFiles: FileList): void {
-    this.filesListEvents.emit(incomingFiles);
-    const allowedIncomingFiles: File[] = [].reduce.call(incomingFiles, (acc: File[], checkFile: File, i: number) => {
-      if (this.isContentTypeAllowed(checkFile.type)) {
-        acc = acc.concat(checkFile);
-      } else {
-        const rejectedFile: UploadFile = this.makeUploadFile(checkFile, i);
-        this.serviceEvents.emit({ type: 'rejected', file: rejectedFile });
-      }
+    this.filesListEvents.emit({
+      incomingFiles,
+      totalFileSizeExceeded: this.totalFileSizeExceeded
+    });
+    if (!this.totalFileSizeExceeded) {
+      const allowedIncomingFiles: File[] = [].reduce.call(incomingFiles, (acc: File[], checkFile: File, i: number) => {
+        if (this.isContentTypeAllowed(checkFile.type)) {
+          acc = acc.concat(checkFile);
+        } else {
+          const rejectedFile: UploadFile = this.makeUploadFile(checkFile, i);
+          this.serviceEvents.emit({ type: 'rejected', file: rejectedFile });
+        }
 
-      return acc;
-    }, []);
+        return acc;
+      }, []);
 
-    this.queue.push(...[].map.call(allowedIncomingFiles, (file: File, i: number) => {
-      const uploadFile: UploadFile = this.makeUploadFile(file, i);
-      this.serviceEvents.emit({ type: 'addedToQueue', file: uploadFile });
-      return uploadFile;
-    }));
+      this.queue.push(...[].map.call(allowedIncomingFiles, (file: File, i: number) => {
+        const uploadFile: UploadFile = this.makeUploadFile(file, i);
+        this.serviceEvents.emit({ type: 'addedToQueue', file: uploadFile });
+        return uploadFile;
+      }));
 
-    this.serviceEvents.emit({ type: 'allAddedToQueue' });
+      this.serviceEvents.emit({ type: 'allAddedToQueue' });
+    }
   }
 
   initInputEvents(input: EventEmitter<UploadInput>): Subscription {
