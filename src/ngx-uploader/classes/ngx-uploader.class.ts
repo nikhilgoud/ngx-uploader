@@ -63,6 +63,8 @@ export class NgUploaderService {
       }));
 
       this.serviceEvents.emit({ type: 'allAddedToQueue' });
+    } else {
+      this.totalFileSizeExceeded.status = false;
     }
   }
 
