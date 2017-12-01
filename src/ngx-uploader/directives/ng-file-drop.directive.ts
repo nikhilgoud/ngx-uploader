@@ -9,6 +9,7 @@ export class NgFileDropDirective implements OnInit, OnDestroy {
   @Input() options: UploaderOptions;
   @Input() uploadInput: EventEmitter<UploadInput>;
   @Output() uploadOutput: EventEmitter<UploadOutput>;
+  @Output() filesList: EventEmitter<any>;
 
   upload: NgUploaderService;
   el: HTMLInputElement;
@@ -17,6 +18,7 @@ export class NgFileDropDirective implements OnInit, OnDestroy {
 
   constructor(public elementRef: ElementRef) {
     this.uploadOutput = new EventEmitter<UploadOutput>();
+    this.filesList = new EventEmitter<any>();
   }
 
   ngOnInit() {
@@ -30,6 +32,12 @@ export class NgFileDropDirective implements OnInit, OnDestroy {
     this._sub.push(
       this.upload.serviceEvents.subscribe((event: UploadOutput) => {
         this.uploadOutput.emit(event);
+      })
+    );
+
+    this._sub.push(
+      this.upload.filesListEvents.subscribe((event: any) => {
+        this.filesList.emit(event);
       })
     );
 
