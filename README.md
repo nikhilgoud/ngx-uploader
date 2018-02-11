@@ -2,7 +2,7 @@
 
 [![AbstruseCI](https://ci.bleenco.io/badge/11)](https://ci.bleenco.io/repo/11)
 
-Angular 2+ File Uploader
+Angular 2+ File Uploader (this includes also Angular 5)
 
 http://ngx-uploader.com
 
@@ -72,6 +72,7 @@ export interface UploadFile {
   progress: UploadProgress;
   response?: any; // response when upload is done (parsed JSON or string)
   responseStatus?: number; // response status code when upload is done
+  responseHeaders?: { [key: string]: string }; // response headers when upload is done
 }
 
 // output events emitted by ngx-uploader
@@ -135,7 +136,7 @@ startUpload(): void {
 
 ## Example
 
-**You can always run working example by cloning this repository, building project with `yarn build:prod` and running server with `node ./dist/api/index.js`.**
+**You can always run working example by cloning this repository, building project with `yarn build:prod` and running server with `node ./dist-app/api/index.js`.**
 
 ### Component Code
 
@@ -216,7 +217,7 @@ export class AppHomeComponent {
 
 ### Template Code
 
-For whole template code please check [here](https://github.com/jkuri/ngx-uploader/tree/master/src/app/components/app-home/app-home.component.html).
+For whole template code please check [here](https://github.com/bleenco/ngx-uploader/blob/master/src/components/app-home/app-home.component.html).
 
 ```html
 <div class="drop-container" ngFileDrop [options]="options" (uploadOutput)="onUploadOutput($event)" [uploadInput]="uploadInput" [ngClass]="{ 'is-drop-over': dragOver }">

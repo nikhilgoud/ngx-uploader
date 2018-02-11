@@ -2,7 +2,7 @@ import { EventEmitter } from '@angular/core';
 import { Observable } from 'rxjs/Observable';
 import { Subject } from 'rxjs/Subject';
 import { Subscription } from 'rxjs/Subscription';
-import 'rxjs/add/operator/mergeMap';
+import { mergeMap } from 'rxjs/operators/mergeMap';
 import { UploadFile, UploadOutput, UploadInput, UploadStatus, BlobFile } from './interfaces';
 
 export function humanizeBytes(bytes: number): string {
@@ -35,7 +35,9 @@ export class NgUploaderService {
     this.contentTypes = contentTypes;
 
     this.uploadScheduler
-      .mergeMap(upload => this.startUpload(upload), concurrency)
+      .pipe(
+        mergeMap(upload => this.startUpload(upload), concurrency)
+      )
       .subscribe(uploadOutput => this.serviceEvents.emit(uploadOutput));
   }
 
@@ -216,6 +218,8 @@ export class NgUploaderService {
             file.response = xhr.response;
           }
 
+          file.responseHeaders = this.parseResponseHeaders(xhr.getAllResponseHeaders());
+
           observer.next({ type: 'done', file: file });
 
           observer.complete();
@@ -233,10 +237,10 @@ export class NgUploaderService {
           observer.complete();
         }
 
-        file.form.append(event.fieldName || 'file', uploadFile, uploadFile.name);
-
         Object.keys(data).forEach(key => file.form.append(key, data[key]));
         Object.keys(headers).forEach(key => xhr.setRequestHeader(key, headers[key]));
+
+        file.form.append(event.fieldName || 'file', uploadFile, uploadFile.name);
 
         this.serviceEvents.emit({ type: 'start', file: file });
         xhr.send(file.form);
@@ -305,5 +309,18 @@ export class NgUploaderService {
       sub: undefined,
       nativeFile: file
     };
+  }
+
+  private parseResponseHeaders(httpHeaders: ByteString) {
+    if (!httpHeaders) {
+      return;
+    }
+    return httpHeaders.split('\n')
+      .map(x => x.split(/: */, 2))
+      .filter(x => x[0])
+      .reduce((ac, x) => {
+        ac[x[0]] = x[1];
+        return ac;
+      }, {});
   }
 }
